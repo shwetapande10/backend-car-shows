@@ -1,0 +1,12 @@
+service: car-shows 
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: ap-southeast-2
+functions:
+  get-car-shows:
+    handler: handler.getCarShows
+    events:
+      - http:
+          path: car-shows
+          method: get

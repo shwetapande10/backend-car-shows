@@ -1,0 +1,11 @@
+# package directories
+node_modules
+
+# Serverless directories
+.serverless
+
+# idea files
+.idea
+
+# configs
+config.*.json
