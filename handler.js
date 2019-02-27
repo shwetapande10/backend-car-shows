@@ -34,7 +34,6 @@ function restructure(arr) {
         }
     });
   });
-  //console.log(_.chain(makes).keys().value())
 
   makes = _.chain(makes).keys().map(makeName=> {
     let data = {}
@@ -46,9 +45,8 @@ function restructure(arr) {
     }).value()
     data.name = makeName
     data.models = models
-    if(makes.shows){
-      data.shows = makes.shows
-    }
+    if(makes[makeName].shows)
+      data.shows = makes[makeName].shows
     return data
   }).value()
   let data = {makes:makes};
