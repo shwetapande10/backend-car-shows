@@ -26,22 +26,29 @@ function restructure(data) {
 
 function flattenData(data) {
   return _.chain(data).map((show) => {
-    return _.map(show.cars, (car) => { car.showname = show.name; return car })
+    return _.map(show.cars, (car) => { 
+      let carobj = {makes:car.make, models:car.model, shows: show.name}
+      return carobj;
+    })
   }).flatten().value();
 }
 
 function groupCarsData(data) {
   let groupedData = {}
-  groupedData.makes = _.map(group(data, "make"), make => {
-    make.models = _.map(group(make.value, "model"), model => {
-      model.shows = _.map(group(model.value, "showname"), show => {
-        delete show.value; return show;
-      })
-      delete model.value; return model;
-    })
-    delete make.value; return make;
-  })
+  groupedData.makes = mapGroups({value:data},["makes","models","shows"]);
   return groupedData;
+}
+
+function mapGroups(data, keysMap){
+  let key = keysMap.shift();
+  return _.map(group(data.value, key), obj => {
+    if(keysMap.length>0){
+      let nextForKey = keysMap[0];
+      obj[nextForKey] = mapGroups(obj,keysMap.slice(0));
+    }
+    delete obj.value; 
+    return obj;
+  })
 }
 
 function group(data, key) {
