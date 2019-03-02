@@ -10,7 +10,6 @@ describe("car-business-service", function () {
     process.env.IS_DATA_SANITY_ENABLED = true;
     carService.setDataService(carDataService);
     let actualResponse = await carService.getGroupedCarsData();
-    console.log(JSON.stringify(actualResponse));
     expect(JSON.stringify(actualResponse)).toEqual(JSON.stringify(expectedResponse));
   });
 

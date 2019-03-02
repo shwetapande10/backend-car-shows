@@ -9,8 +9,6 @@ module.exports = {
   getGroupedCarsData: async () => {
     let data = await carDataService.callCarsAPI(process.env.CARS_API_URL);
     let response = restructure(data);
-    if (process.env.IS_DATA_SANITY_ENABLED)
-      response = filterIncorrectData(response);
     return response;
   }
 }
@@ -21,9 +19,12 @@ function restructure(data) {
   let response = [];
   let flatData = flattenData(data);
   response = groupCarsData(flatData);
+  if (process.env.IS_DATA_SANITY_ENABLED)
+      response = filterIncorrectData(response);
   return response;
 }
 
+//flatten data
 function flattenData(data) {
   return _.chain(data).map((show) => {
     return _.map(show.cars, (car) => { 
@@ -33,6 +34,7 @@ function flattenData(data) {
   }).flatten().value();
 }
 
+//group data
 function groupCarsData(data) {
   let groupedData = {}
   groupedData.makes = mapGroups({value:data},["makes","models","shows"]);
@@ -56,6 +58,7 @@ function group(data, key) {
   return _.chain(outerobj).keys().sort().map(key => { return { name: key, value: outerobj[key] } }).value()
 }
 
+//filter data
 function filterIncorrectData(data) {
   if (!data || !data.makes || !Array.isArray(data.makes))
     return data;
@@ -67,11 +70,19 @@ function getFilteredData(data)
 {
   return _.reduce(data, (modified, obj) => {
     if (obj.name && obj.name != "" && obj.name != "undefined") {
-      let key = obj.models ? "models" : obj.shows? "shows" : null;
+      let key = getNextKey(obj);
       if(key)
         obj[key] = getFilteredData(obj[key])
       modified.push(obj);
     }
     return modified;
   }, []);
+}
+
+function getNextKey(object){
+  let key;
+  let clonedObj = _.clone(object);
+  if(clonedObj.name)
+    delete clonedObj.name;
+  return _.keys(clonedObj)[0];
 }

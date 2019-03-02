@@ -13,8 +13,9 @@ module.exports.callCarsAPI = async (url) => {
     return JSON.parse(response.body);
   }
   catch (error) {
-    console.error(error.statusCode);
-    console.error(error.statusMessage);
-    throw new Error("Internal Server Error"); //todo  typescript?
+    console.error("Error from service - " + url 
+    + "\n Error code - " + error.statusCode
+    + "\n Error message - " + error.statusMessage);
+    throw new Error("Internal Server Error");
   }
 };
