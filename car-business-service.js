@@ -52,23 +52,19 @@ function group(data, key) {
 function filterIncorrectData(data) {
   if (!data || !data.makes || !Array.isArray(data.makes))
     return data;
-  data.makes = _.reduce(data.makes, (modifiedMakes, make) => {
-    if (make.name && make.name != "" && make.name != "undefined") {
-      make.models = _.reduce(make.models, (modifiedModels, model) => {
-        if (model.name && model.name != "" && model.name != "undefined") {
-          model.shows = _.reduce(model.shows, (modifiedShows, show) => {
-            if (show.name && show.name != "" && show.name != "undefined") {
-              modifiedShows.push(show);
-            }
-            return modifiedShows;
-          }, []);
-          modifiedModels.push(model);
-        }
-        return modifiedModels;
-      }, []);
-      modifiedMakes.push(make);
-    }
-    return modifiedMakes;
-  }, []);
+  data.makes = getFilteredData(data.makes);
   return data;
+}
+
+function getFilteredData(data)
+{
+  return _.reduce(data, (modified, obj) => {
+    if (obj.name && obj.name != "" && obj.name != "undefined") {
+      let key = obj.models ? "models" : obj.shows? "shows" : null;
+      if(key)
+        obj[key] = getFilteredData(obj[key])
+      modified.push(obj);
+    }
+    return modified;
+  }, []);
 }

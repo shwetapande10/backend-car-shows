@@ -10,7 +10,7 @@ describe("car-business-service", function () {
     process.env.IS_DATA_SANITY_ENABLED = true;
     carService.setDataService(carDataService);
     let actualResponse = await carService.getGroupedCarsData();
-    expect(JSON.stringify(expectedResponse)).toEqual(JSON.stringify(actualResponse));
+    expect(JSON.stringify(actualResponse)).toEqual(JSON.stringify(expectedResponse));
   });
 
   it("should test valid data", async function () {
@@ -19,7 +19,7 @@ describe("car-business-service", function () {
     process.env.IS_DATA_SANITY_ENABLED = true;
     carService.setDataService(carDataService);
     let actualResponse = await carService.getGroupedCarsData();
-    expect(JSON.stringify(expectedResponse)).toEqual(JSON.stringify(actualResponse));
+    expect(JSON.stringify(actualResponse)).toEqual(JSON.stringify(expectedResponse));
   });
 
   it("should test failed data response", async function () {
