@@ -5,11 +5,15 @@ provider:
   region: ap-southeast-2
   environment:
     CARS_API_URL: "http://eacodingtest.digital.energyaustralia.com.au/api/v1/cars"
+    IS_DATA_SANITY_ENABLED : true
     
 functions:
   get-car-shows:
     handler: handler.getCarShows
+    package:
+      exclude: spec
     events:
       - http:
           path: car-shows
           method: get
+          cors: true

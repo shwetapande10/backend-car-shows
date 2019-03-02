@@ -2,7 +2,6 @@
 const got = require('got')
 
 module.exports.callCarsAPI = async (url) => {
-  console.log(url);
   let options = {
     headers: {
       'Content-Type': 'application/json',
@@ -10,12 +9,12 @@ module.exports.callCarsAPI = async (url) => {
     }
   }
   try {
-    const response = await got(url, options)
-    //console.log(response.body);
+    const response = await got(url, options);
     return JSON.parse(response.body);
   }
   catch (error) {
-    console.log("error");
-    return await error.body
+    console.error(error.statusCode);
+    console.error(error.statusMessage);
+    throw new Error("Internal Server Error");
   }
 };
