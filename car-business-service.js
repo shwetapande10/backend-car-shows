@@ -19,7 +19,7 @@ function restructure(data) {
   let response = [];
   let flatData = flattenData(data);
   response = groupCarsData(flatData);
-  if (process.env.IS_DATA_SANITY_ENABLED)
+  if (process.env.IS_DATA_SANITY_ENABLED === "true")
       response = filterIncorrectData(response);
   return response;
 }
@@ -69,7 +69,7 @@ function filterIncorrectData(data) {
 function getFilteredData(data)
 {
   return _.reduce(data, (modified, obj) => {
-    if (obj.name && obj.name != "" && obj.name != "undefined") {
+    if (obj.name && obj.name !== "" && obj.name != "undefined") {
       let key = getNextKey(obj);
       if(key)
         obj[key] = getFilteredData(obj[key])
