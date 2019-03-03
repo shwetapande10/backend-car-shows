@@ -39,7 +39,7 @@ describe("car-business-service", function () {
     process.env.FILTER_DATA = "STRICT_VALID";
     carService.setDataService(carDataService);
     let actualResponse = await carService.getGroupedCarsData();
-    expect([]).toEqual(actualResponse.makes)
+    expect(actualResponse.makes).toEqual([])
   });
 
   it("should test error response", async function () {
