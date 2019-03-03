@@ -8,27 +8,37 @@ module.exports = {
   },
   getGroupedCarsData: async () => {
     let data = await carDataService.callCarsAPI(process.env.CARS_API_URL);
+    data = validate(data);
     let response = restructure(data);
     return response;
   }
 }
 
+function validate(data) {
+  if (!Array.isArray(data)) {
+    if (data.length > 0) {
+      console.error(data)
+      throw new Error("Error Fetching Data!")
+    }
+    data = [];
+  }
+  return data;
+}
+
 function restructure(data) {
-  if (!Array.isArray(data))
-    return data;
   let response = [];
   let flatData = flattenData(data);
+  flatData = filterIncorrectData(flatData);
   response = groupCarsData(flatData);
-  if (process.env.IS_DATA_SANITY_ENABLED === "true")
-      response = filterIncorrectData(response);
+
   return response;
 }
 
 //flatten data
 function flattenData(data) {
   return _.chain(data).map((show) => {
-    return _.map(show.cars, (car) => { 
-      let carobj = {makes:car.make, models:car.model, shows: show.name}
+    return _.map(show.cars, (car) => {
+      let carobj = { makes: car.make, models: car.model, shows: show.name }
       return carobj;
     })
   }).flatten().value();
@@ -37,18 +47,18 @@ function flattenData(data) {
 //group data
 function groupCarsData(data) {
   let groupedData = {}
-  groupedData.makes = mapGroups({value:data},["makes","models","shows"]);
+  groupedData.makes = mapGroups({ value: data }, ["makes", "models", "shows"]);
   return groupedData;
 }
 
-function mapGroups(data, keysMap){
+function mapGroups(data, keysMap) {
   let key = keysMap.shift();
   return _.map(group(data.value, key), obj => {
-    if(keysMap.length>0){
+    if (keysMap.length > 0) {
       let nextForKey = keysMap[0];
-      obj[nextForKey] = mapGroups(obj,keysMap.slice(0));
+      obj[nextForKey] = mapGroups(obj, keysMap.slice(0));
     }
-    delete obj.value; 
+    delete obj.value;
     return obj;
   })
 }
@@ -60,29 +70,40 @@ function group(data, key) {
 
 //filter data
 function filterIncorrectData(data) {
-  if (!data || !data.makes || !Array.isArray(data.makes))
+  let filterPolicy = process.env.FILTER_DATA;
+  if (!filterPolicy || filterPolicy == "" || filterPolicy == "NONE")
     return data;
-  data.makes = getFilteredData(data.makes);
-  return data;
+  return getFilteredData(data, filterPolicy, ["makes", "models", "shows"]);
 }
 
-function getFilteredData(data)
-{
-  return _.reduce(data, (modified, obj) => {
-    if (obj.name && obj.name !== "" && obj.name != "undefined") {
-      let key = getNextKey(obj);
-      if(key)
-        obj[key] = getFilteredData(obj[key])
-      modified.push(obj);
-    }
+function getFilteredData(data, filterPolicy, forKeys) {
+  return _.reduce(data, (modified, object) => {
+    let newObject = getObjectAsPerFilter(object, filterPolicy, forKeys);
+    if (newObject)
+      modified.push(newObject);
     return modified;
   }, []);
 }
 
-function getNextKey(object){
-  let key;
-  let clonedObj = _.clone(object);
-  if(clonedObj.name)
-    delete clonedObj.name;
-  return _.keys(clonedObj)[0];
+function getObjectAsPerFilter(object, filterPolicy, forKeys) {
+  for (let i = 0; i < forKeys.length; i++) {
+    object = getFilteredObject(object, forKeys[i], filterPolicy);
+    if (!object)
+      break;
+  }
+  return object
+}
+
+function getFilteredObject(object, key, filterPolicy) {
+  if (isElementInValid(object[key])) {
+    if (filterPolicy == "STRICT_VALID_REPLACE")
+      object[key] = "-- no data --";
+    else
+      object = null;
+  }
+  return object;
+}
+
+function isElementInValid(element) {
+  return (!element || element == "" || element == "undefined")
 }
